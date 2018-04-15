@@ -71,13 +71,14 @@ int main() {
   // MPC is initialized here!
   MPC mpc;
 
+
   h.onMessage([&mpc](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
                      uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
     // The 2 signifies a websocket event
     string sdata = string(data).substr(0, length);
-    //cout << sdata << endl;
+    cout << sdata << endl;
     if (sdata.size() > 2 && sdata[0] == '4' && sdata[1] == '2') {
       string s = hasData(sdata);
       if (s != "") {
@@ -91,6 +92,8 @@ int main() {
           double py = j[1]["y"];    // The global y position of the vehicle.
           double psi = j[1]["psi"]; // The orientation of the vehicle in radians
           double v = j[1]["speed"]; // The current velocity in mph
+          double current_steering_angle = j[1]["steering_angle"]; // The current steering angle in radians.
+          double current_throttle = j[1]["throttle"]; // The current throttle value [-1, 1]
 
           Eigen::VectorXd ptsx_vec = Eigen::VectorXd(ptsx.size());
           Eigen::VectorXd ptsy_vec = Eigen::VectorXd(ptsx.size());
@@ -120,24 +123,30 @@ int main() {
           double state_cte = polyeval(coeffs, 0);
           double state_epsi = -atan(coeffs[1]);  // x = 0, we can ignore other members
 
+
+          // Consider the latency
+          double latency = 0.1;   // 100 milliseconds
+          const double Lf = 2.67; // This is the length from front to CoG that has a similar radius.
+          state_x += state_v * latency;
+          state_psi += current_steering_angle / Lf * latency;
+          state_cte += state_v * sin(state_epsi) * latency;
+          state_epsi += state_v / Lf * current_steering_angle * latency;
+          state_v += current_throttle * latency;
+
+
+
+          //Calculate steering angle and throttle using MPC.
+
           Eigen::VectorXd state(6);
           state << state_x, state_y, state_psi, state_v, state_cte, state_epsi;
-
-          /*
-          * TODO: Calculate steering angle and throttle using MPC.
-          *
-          * Both are in between [-1, 1].
-          *
-          */
-
           auto vars = mpc.Solve(state, coeffs);
 
           double delta = vars[6];   // Steering angle in radians counted in CCW direction
           double acc = vars[7];
 
-          printf("CTE: %5.3f EPsi: %5.3f Delta: %5.3f   Throttle: %5.3f\n", state_cte, state_epsi, delta, acc);
+          // printf("CTE: %5.3f EPsi: %5.3f Delta: %5.3f   Throttle: %5.3f\n", state_cte, state_epsi, delta, acc);
 
-          double steer_value = -(delta / deg2rad(25));
+          double steer_value = -(delta / deg2rad(25));  // Simulator counts angles in opposite direction, normalize to range [-1..1]
           double throttle_value = acc;
 
           json msgJson;
@@ -164,7 +173,7 @@ int main() {
 
 
           auto msg = "42[\"steer\"," + msgJson.dump() + "]";
-          //std::cout << msg << std::endl;
+          std::cout << msg << std::endl;
           // Latency
           // The purpose is to mimic real driving conditions where
           // the car does actuate the commands instantly.
