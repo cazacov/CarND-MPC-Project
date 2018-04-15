@@ -26,7 +26,7 @@ To capture how errors are changing over time the state vector includes also
 - epsi - Orientation error 
 
 The goal is to calculate desired 
-- delta - Steering wheel angle
+- delta - Steering angle
 - a - Acceleration from throttle and break pedals
  
 The model has also hyperparameter Lt equal to distance between car's center of gravity and forward wheels in meters.   
