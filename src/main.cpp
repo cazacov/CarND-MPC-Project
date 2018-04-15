@@ -77,7 +77,7 @@ int main() {
     // The 4 signifies a websocket message
     // The 2 signifies a websocket event
     string sdata = string(data).substr(0, length);
-    cout << sdata << endl;
+    //cout << sdata << endl;
     if (sdata.size() > 2 && sdata[0] == '4' && sdata[1] == '2') {
       string s = hasData(sdata);
       if (s != "") {
@@ -85,12 +85,27 @@ int main() {
         string event = j[0].get<string>();
         if (event == "telemetry") {
           // j[1] is the data JSON object
-          vector<double> ptsx = j[1]["ptsx"];
-          vector<double> ptsy = j[1]["ptsy"];
-          double px = j[1]["x"];
-          double py = j[1]["y"];
-          double psi = j[1]["psi"];
-          double v = j[1]["speed"];
+          vector<double> ptsx = j[1]["ptsx"]; // The global x positions of the waypoints
+          vector<double> ptsy = j[1]["ptsy"]; // The global y positions of the waypoints.
+          double px = j[1]["x"];    // The global x position of the vehicle.
+          double py = j[1]["y"];    // The global y position of the vehicle.
+          double psi = j[1]["psi"]; // The orientation of the vehicle in radians
+          double v = j[1]["speed"]; // The current velocity in mph
+
+          // Convert waypoints to vehicle's coordinate system
+          for (int i = 0; i < ptsx.size(); i++)
+          {
+            double wx = ptsx[i];
+            double wy = ptsy[i];
+
+            double car_x = (wx - px) * cos(-psi) - (wy - py) * sin(-psi);
+            double car_y = (wx - px) * sin(-psi) + (wy - py) * cos(-psi);
+
+            ptsx[i] = car_x;
+            ptsy[i] = car_y;
+          }
+
+
 
           /*
           * TODO: Calculate steering angle and throttle using MPC.
@@ -98,8 +113,10 @@ int main() {
           * Both are in between [-1, 1].
           *
           */
-          double steer_value;
-          double throttle_value;
+          double steer_value = -0.02;
+          double throttle_value = 0.3;
+
+          printf("px: %6.2f\t py: %6.2f\t psi: %5.3f\t v:%5.2f\n", px,py,psi,v);
 
           json msgJson;
           // NOTE: Remember to divide by deg2rad(25) before you send the steering value back.
@@ -118,8 +135,8 @@ int main() {
           msgJson["mpc_y"] = mpc_y_vals;
 
           //Display the waypoints/reference line
-          vector<double> next_x_vals;
-          vector<double> next_y_vals;
+          vector<double> next_x_vals = ptsx;
+          vector<double> next_y_vals = ptsy;
 
           //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system
           // the points in the simulator are connected by a Yellow line
@@ -129,7 +146,7 @@ int main() {
 
 
           auto msg = "42[\"steer\"," + msgJson.dump() + "]";
-          std::cout << msg << std::endl;
+          //std::cout << msg << std::endl;
           // Latency
           // The purpose is to mimic real driving conditions where
           // the car does actuate the commands instantly.
