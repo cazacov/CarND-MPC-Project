@@ -269,6 +269,15 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   auto cost = solution.obj_value;
   std::cout << "Cost " << cost << std::endl;
 
+  predicted_x = vector<double>(N);
+  predicted_y = vector<double>(N);
+
+  for (int i = 0; i < N; i++)
+  {
+    predicted_x[i] = solution.x[x_start + i];
+    predicted_y[i] = solution.x[y_start + i];
+  }
+
   // TODO: Return the first actuator values. The variables can be accessed with
   // `solution.x[i]`.
   //
