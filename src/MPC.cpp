@@ -36,7 +36,7 @@ size_t a_start = delta_start + N - 1;
 
 // Both the reference cross track and orientation errors are 0.
 // The reference velocity is set to 35 mph.
-double ref_v = 35;
+double ref_v = 35 * 1609.344 / 3600;  // use meters per second in calculations
 
 class FG_eval {
  public:

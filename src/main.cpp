@@ -105,6 +105,8 @@ int main() {
             ptsy[i] = car_y;
           }
 
+          // Convert velocity in meters per second
+          v = v * 1609.344 / 3600;
 
 
           /*
