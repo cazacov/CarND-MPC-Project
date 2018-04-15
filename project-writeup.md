@@ -1,5 +1,7 @@
 # Model Predictive Control (MPC)
 
+![Demo](img/demo.gif)
+
 ## Model
 
 This projects replaces real car with a simplified Kinematic model that ignores tire forces, gravity and mass and predicts next state based only on trigonometric considerations. 
@@ -56,7 +58,7 @@ After conversion the waypoints are approximated with third degree polynomial usi
 
 ## Solving the problem
 
-Having current model state and desired waypoints the code uses Ipopt and CppAD libraries to find steering angle and acceleration that minimize loss function. The loss function s penalizes errors in car's position on the road, its orientation and speed. The loss function also penalize hard steering and fast changes in steering and acceleration.         
+Having current model state and desired waypoints the code uses Ipopt and CppAD libraries to find steering angle and acceleration that minimize loss function. The loss function penalizes errors in car's position on the road, its orientation and speed. The loss function also penalizes hard steering and fast changes in steering and acceleration.         
 
 ## Handling latency
 
