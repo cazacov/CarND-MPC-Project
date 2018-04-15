@@ -12,7 +12,7 @@ Self-Driving Car Engineer Nanodegree Program
   * Mac: [install Xcode command line tools to get make](https://developer.apple.com/xcode/features/)
   * Windows: [Click here for installation instructions](http://gnuwin32.sourceforge.net/packages/make.htm)
 * gcc/g++ >= 5.4
-  * Linux: gcc / g++ is installed by default on most Linux distros
+  * Linux: gcc / g++ is installed by default on most Linux distros. There were problems with gcc 7 in Ubuntu 17, so I switched to gcc 6.4 as described [here](https://gist.github.com/application2000/73fd6f4bf1be6600a2cf9f56315a2d91).
   * Mac: same deal as make - [install Xcode command line tools]((https://developer.apple.com/xcode/features/)
   * Windows: recommend using [MinGW](http://www.mingw.org/)
 * [uWebSockets](https://github.com/uWebSockets/uWebSockets)
