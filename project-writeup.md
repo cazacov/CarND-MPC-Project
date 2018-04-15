@@ -50,4 +50,30 @@ Finally I reduced the number of steps to 12 to reduce the calculation effort.
 
 ## Preprocessing
 
+The simulator provides waypoints in global coordinates that must be converted to car's coordinates. It also uses miles per hour for velocity measurement. The algorithm converts all distances into meters, time in seconds, angles in radians.
+
+After conversion the waypoints are approximated with third degree polynomial using Eigen library.
+
+## Solving the problem
+
+Having current model state and desired waypoints the code uses Ipopt and CppAD libraries to find steering angle and acceleration that minimize loss function. The loss function s penalizes errors in car's position on the road, its orientation and speed. The loss function also penalize hard steering and fast changes in steering and acceleration.         
+
 ## Handling latency
+
+One of the advantages of MPC algorithms compared to PID controller is the easiness of latency handling. The real-time values coming from simulator are updated with predicted changes during the latency time. In case of Kinematic model the code just predicts the vehicle will move forward with the current parameters next _latency_ seconds.
+
+![X](img/l_x.png)
+
+![Y](img/l_y.png)
+
+![Psi](img/l_psi.png)
+
+![V](img/l_v.png)
+
+![CTE](img/l_cte.png)
+
+![CTE](img/l_epsi.png)
+
+## Issues
+
+When compiled with gcc 7 on Ubuntu 17 the Ipopt library crashes in runtime failing to find the file /usr/local/lib/libcoinmumps.so. The solution was to switch to gcc 6.4 as described [here](https://gist.github.com/application2000/73fd6f4bf1be6600a2cf9f56315a2d91) and recompile the library.        
