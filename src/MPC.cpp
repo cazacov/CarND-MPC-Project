@@ -34,7 +34,6 @@ size_t delta_start = epsi_start + N;
 size_t a_start = delta_start + N - 1;
 
 
-// Both the reference cross track and orientation errors are 0.
 // The reference velocity is set to 35 mph.
 double ref_v = 35 * 1609.344 / 3600;  // use meters per second in calculations
 
@@ -64,14 +63,14 @@ class FG_eval {
 
     // Minimize the use of actuators.
     for (int t = 0; t < N - 1; t++) {
-      fg[0] += CppAD::pow(vars[delta_start + t], 2);
-      fg[0] += CppAD::pow(vars[a_start + t], 2);
+      fg[0] += 100 * CppAD::pow(vars[delta_start + t], 2);
+      fg[0] += 5 * CppAD::pow(vars[a_start + t], 2);
     }
 
     // Minimize the value gap between sequential actuations.
     for (int t = 0; t < N - 2; t++) {
-      fg[0] += CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
-      fg[0] += CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);
+      fg[0] += 1000 * CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
+      fg[0] += 500 * CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);
     }
 
     //

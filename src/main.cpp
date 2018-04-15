@@ -108,10 +108,20 @@ int main() {
             ptsy_vec[i] = car_y;
           }
 
-          // Convert velocity in meters per second
-          v = v * 1609.344 / 3600;
+          printf("px: %6.2f\t py: %6.2f\t psi: %5.3f\t v:%5.2f\n", px,py,psi,v);
 
           auto coeffs = polyfit(ptsx_vec, ptsy_vec, 3);
+
+          // Car always has position (0,0) in its own coordinates
+          double state_x = 0;
+          double state_y = 0;
+          double state_psi = 0;
+          double state_v = v * 1609.344 / 3600; // Convert velocity in MPH to meters per second
+          double state_cte = polyeval(coeffs, 0);
+          double state_epsi = -atan(coeffs[1]);  // x = 0, we can ignore other members
+
+          Eigen::VectorXd state(6);
+          state << state_x, state_y, state_psi, state_v, state_cte, state_epsi;
 
           /*
           * TODO: Calculate steering angle and throttle using MPC.
@@ -119,10 +129,16 @@ int main() {
           * Both are in between [-1, 1].
           *
           */
-          double steer_value = -0.02;
-          double throttle_value = 0.3;
 
-          printf("px: %6.2f\t py: %6.2f\t psi: %5.3f\t v:%5.2f\n", px,py,psi,v);
+          auto vars = mpc.Solve(state, coeffs);
+
+          double delta = vars[6];   // Steering angle in radians counted in CCW direction
+          double acc = vars[7];
+
+          printf("CTE: %5.3f EPsi: %5.3f Delta: %5.3f   Throttle: %5.3f\n", state_cte, state_epsi, delta, acc);
+
+          double steer_value = -(delta / deg2rad(25));
+          double throttle_value = acc;
 
           json msgJson;
           // NOTE: Remember to divide by deg2rad(25) before you send the steering value back.
