@@ -92,6 +92,9 @@ int main() {
           double psi = j[1]["psi"]; // The orientation of the vehicle in radians
           double v = j[1]["speed"]; // The current velocity in mph
 
+          Eigen::VectorXd ptsx_vec = Eigen::VectorXd(ptsx.size());
+          Eigen::VectorXd ptsy_vec = Eigen::VectorXd(ptsx.size());
+
           // Convert waypoints to vehicle's coordinate system
           for (int i = 0; i < ptsx.size(); i++)
           {
@@ -101,13 +104,14 @@ int main() {
             double car_x = (wx - px) * cos(-psi) - (wy - py) * sin(-psi);
             double car_y = (wx - px) * sin(-psi) + (wy - py) * cos(-psi);
 
-            ptsx[i] = car_x;
-            ptsy[i] = car_y;
+            ptsx_vec[i] = car_x;
+            ptsy_vec[i] = car_y;
           }
 
           // Convert velocity in meters per second
           v = v * 1609.344 / 3600;
 
+          auto coeffs = polyfit(ptsx_vec, ptsy_vec, 3);
 
           /*
           * TODO: Calculate steering angle and throttle using MPC.
@@ -137,8 +141,8 @@ int main() {
           msgJson["mpc_y"] = mpc_y_vals;
 
           //Display the waypoints/reference line
-          vector<double> next_x_vals = ptsx;
-          vector<double> next_y_vals = ptsy;
+          vector<double> next_x_vals(&ptsx_vec[0], ptsx_vec.data() + ptsx_vec.rows());
+          vector<double> next_y_vals(&ptsy_vec[0], ptsy_vec.data() + ptsy_vec.rows());
 
           //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system
           // the points in the simulator are connected by a Yellow line
